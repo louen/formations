@@ -1,4 +1,0 @@
-formations
-==========
-
-Formations
