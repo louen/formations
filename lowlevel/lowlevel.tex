@@ -598,10 +598,60 @@ mov         eax,dword ptr [ebp-4] ; copie le parametre  (via eax)
 push        eax  ; pour le mettre 	sur la pile 
 call        00C81041  ; saute a l'adresse de la fonction
 add         esp,4  ; pareil que pop(mais ignore la valeur)
-mov         dword ptr [ebp-4],eax  ; le résultat (eax) va dans résult
+mov         dword ptr [ebp-4],eax  ; le resultat (eax) va dans result
 ;     9:         return 0;
 xor         eax,eax  
 \end{lstlisting}
+\begin{itemize}
+\item Le parametre est copié sur la pile (via un registre)
+\item On sait que le résultat est dans \texttt{eax}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Notre fonction}
+Il est temps (enfin) de désassembler notre fonction !
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+; 1: int ajouterUn( int argument ){
+push        ebp      ;preambule : on connait !
+mov         ebp,esp  
+sub         esp,44h  
+push        ebx  
+push        esi  
+push        edi  
+;2: 	int local = argument + 1;
+mov         eax,dword ptr [ebp+8]  ;c'est hors de notre SF
+add         eax,1  
+mov         dword ptr [ebp-4],eax  ; variable locale dans notre SF
+;3: 	return local;
+mov         eax,dword ptr [ebp-4]  ; resultat dans eax
+;4: }
+pop         edi  ; epilogue : on connait aussi
+pop         esi  
+pop         ebx  
+mov         esp,ebp  
+pop         ebp  
+ret  
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Résumé}
+La pile sert a :
+\begin{itemize}
+\item Stocker les variables locales
+\item Sauver les registres et passer les parametres
+\end{itemize}
+La \textbf{convention d'appel} détermine qui fait quoi sur la pile.
+
+Le \textbf{stack frame}
+\begin{itemize}
+\item Un par appel de fonction
+\item Compris entre \texttt{esp} et \texttt{ebp}
+\item Les arguments : dans le SF de la fonction appelante
+\end{itemize}
+
 \end{frame}
 
 \section{Condition zéro}
