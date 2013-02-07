@@ -471,6 +471,16 @@ Si on break, on peut voir les stack frames des fonctions empilés :
 \end{itemize} 
 \end{frame}
 
+\begin{frame}
+\frametitle{Les conventions d'appel} % mettr ça plus haut ?
+La convention d'appel standard de VS/x86 s'appelle \texttt{stdcall}
+\begin{itemize}
+\item Ou vont les paramètres ? Sur la pile !
+\item Ou est la valeur de retour ? dans \texttt{eax}
+\item Qui vide la pile après l'appel ? l'appelé.
+\item Qui sauve quels registres ? l'appelant (\texttt{eax}-\texttt{edx}) et l'appelé le reste
+\end{itemize}
+\end{frame}
 % TODO  : image d'un stack frame ?
 
 \begin{frame}[fragile]
@@ -550,26 +560,47 @@ En résumé :
 \end{itemize}
 \end{frame}
 
-\begin{frame}
-\frametitle{Les conventions d'appel} % mettr ça plus haut ?
-La convention d'appel standard de VS/x86 s'appelle \texttt{stdcall}
-\begin{itemize}
-\item Ou vont les paramètres ? Sur la pile !
-\item Ou est la valeur de retour ? dans \texttt{eax}
-\item Qui vide la pile après l'appel ? l'appelé.
-\item Qui sauve quels registres ? l'appelant (\texttt{eax}-\texttt{edx}) et l'appelé le reste
-\end{itemize}
-\end{frame}
+
 
 \begin{frame}[fragile]
 \frametitle{Le préambule} 
 \begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
-push        ebp  
-mov         ebp,esp  
-sub         esp,44h  
-push        ebx  
+push        ebp ; l'ancien bp est sauve
+mov         ebp,esp  ; nouveau bp
+sub         esp,44h  ; ajoute de l'espace
+push        ebx  ; sauve les registres
 push        esi  
 push        edi  
+\end{lstlisting}
+\end{frame}
+
+% image avant -> après 
+\begin{frame}[fragile]
+\frametitle{L'épilogue}
+Il fait l'inverse du préambule :
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+013112A1  pop         edi
+013112A2  pop         esi
+013112A3  pop         ebx
+013112A4  mov         esp,ebp ; restore esp a son ancienne valeur
+013112A6  pop         ebp ; l'ancien bp est juste la !
+013112A7  ret
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Et notre code ?}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;     7:         int result = 0;
+mov         dword ptr [ebp-4],0  ; result est a ebp-4 dans notre SF 
+;     8:         result = ajouterUn(result);
+mov         eax,dword ptr [ebp-4] ; copie le parametre  (via eax)
+push        eax  ; pour le mettre 	sur la pile 
+call        00C81041  ; saute a l'adresse de la fonction
+add         esp,4  ; pareil que pop(mais ignore la valeur)
+mov         dword ptr [ebp-4],eax  ; le résultat (eax) va dans résult
+;     9:         return 0;
+xor         eax,eax  
 \end{lstlisting}
 \end{frame}
 
