@@ -283,6 +283,7 @@ exemple : \lstinline+unsigned short x = 0x8A2F+ = $35~375$
 -1 & = & 0xFF\\
 -2 & = & 0xFE \\
 ...& &  \\
+-127 & =&  0x81 \\
 -128 & =&  0x80
 \end{tabular}
 
@@ -641,7 +642,7 @@ ret
 La pile sert a :
 \begin{itemize}
 \item Stocker les variables locales
-\item Sauver les registres et passer les parametres
+\item Sauver les registres et passer les parametres (un ou plusieurs !)
 \end{itemize}
 La \textbf{convention d'appel} détermine qui fait quoi sur la pile.
 
@@ -716,9 +717,53 @@ return 0;
 
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Un peu plus complexe}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;     2: 	if ( arg == 0 ){
+00F51260  cmp         dword ptr [ebp+8],0  
+00F51264  jne         0F5126Fh)  
+;     3: 		local = 12;
+00F51266  mov         dword ptr [ebp-4],0Ch  
+00F5126D  jmp         0F51285h  
+;     4: 	}
+;     5: 	else if (arg != 42) {
+00F5126F  cmp         dword ptr [ebp+8],2Ah  
+00F51273  je          0F5127Eh  
+;     6: 		local = 6 * 9;
+00F51275  mov         dword ptr [ebp-4],36h  
+;     7: 	}
+;     8: 	else {
+00F5127C  jmp         0F51285h  
+;     9: 		local = 666;
+00F5127E  mov         dword ptr [ebp-4],29Ah  
+;    10: 	}
+;    11: 	return 0;
+00F51285  xor         eax,eax  
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Un peu plus complexe}
+\begin{lstlisting}
+int local = 0;
+if ( arg == 0 ){
+  local = 12;
+}
+else if (arg != 42) {
+  local = 6 * 9;
+}
+else {
+	local = 666;
+}
+return 0;
+\end{lstlisting}
+\end{frame}
+
 \section{Les boucles}
 \begin{frame}
 \frametitle{Once upon a while}
+Les boucles c'est trop bien
 \end{frame}
 
 % la pile
