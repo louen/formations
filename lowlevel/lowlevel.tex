@@ -202,6 +202,15 @@ mov         dword ptr [ebp-20h],eax
     \end{lstlisting}
 \end{frame}
 
+\begin{frame}
+\frametitle{Pfiouu !}
+\begin{itemize}
+\item C'était pas si horrible !
+\item En assembleur il y a les \textbf{instructions} (\lstinline[language={[x86masm]Assembler}]+mov+, \lstinline[language={[x86masm]Assembler}]+add+, etc.) et leurs \textbf{opérandes}.
+\item Tout se passe avec les \textbf{registres} qui contiennent les résultats temporaires (\texttt{eax}, \texttt{ebx},...) ou servent a indexer la mémoire (\texttt{esp},\texttt{ebp}...).
+\end{itemize}
+\end{frame}
+
 \section{Casse toi, pauvre type !}
 
 \begin{frame}
@@ -438,6 +447,17 @@ int main() {
 \end{itemize}
 \end{frame}
 
+\begin{frame}
+\frametitle{Ouf !}
+On a vu pas mal de parametres a prendre en compte pour les types et leur représentation
+\begin{itemize}
+\item Leur taille (par rapport au types intrinseques)
+\item La convention de signe (ou pas).
+\item La représentation des flottants (exposant et mantisse)
+\item L'endianness
+\item L'alignement
+\end{itemize}
+\end{frame}
 
 \section{Sexe a Pile}
 
@@ -714,33 +734,10 @@ local = 1;
 Positive:
 return 0;
 \end{lstlisting}
-
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Un peu plus complexe}
-\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
-;     2: 	if ( arg == 0 ){
-00F51260  cmp         dword ptr [ebp+8],0  
-00F51264  jne         0F5126Fh)  
-;     3: 		local = 12;
-00F51266  mov         dword ptr [ebp-4],0Ch  
-00F5126D  jmp         0F51285h  
-;     4: 	}
-;     5: 	else if (arg != 42) {
-00F5126F  cmp         dword ptr [ebp+8],2Ah  
-00F51273  je          0F5127Eh  
-;     6: 		local = 6 * 9;
-00F51275  mov         dword ptr [ebp-4],36h  
-;     7: 	}
-;     8: 	else {
-00F5127C  jmp         0F51285h  
-;     9: 		local = 666;
-00F5127E  mov         dword ptr [ebp-4],29Ah  
-;    10: 	}
-;    11: 	return 0;
-00F51285  xor         eax,eax  
-\end{lstlisting}
+\pause
+\begin{itemize}
+\item Bonus : c'est le registre \textbf{eip} (instruction pointer) qui est modifié par \texttt{jge} !)
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -759,6 +756,89 @@ else {
 return 0;
 \end{lstlisting}
 \end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Un peu plus complexe}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;     2: 	if ( arg == 0 ){
+00F51260  cmp         dword ptr [ebp+8],0  
+00F51264  jne         0F5126Fh ; jump if not equal 
+;     3: 		local = 12;
+00F51266  mov         dword ptr [ebp-4],0Ch  
+00F5126D  jmp         0F51285h; on sort du bloc if 
+;     4: 	}
+;     5: 	else if (arg != 42) {
+00F5126F  cmp         dword ptr [ebp+8],2Ah  
+00F51273  je          0F5127Eh  ; jump if equal
+;     6: 		local = 6 * 9;
+00F51275  mov         dword ptr [ebp-4],36h  
+00F5127C  jmp         0F51285h   ; on sort du bloc if
+;     7: 	}
+;     8: 	else {
+;     9: 		local = 666;
+00F5127E  mov         dword ptr [ebp-4],29Ah ; 
+;    10: 	}
+;    11: 	return 0;
+00F51285  xor         eax,eax  
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Dernier exemple : opérations logiques}
+\begin{lstlisting}
+int f (int arg) {
+  int local = 0;
+
+  if ( arg >= 7 && arg <= 12){
+    local = 9001;
+  }
+  else if (arg || ! arg || arg == 69 ) { // stupide :)
+    local = 6 * 9;
+  }
+  return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Dernier exemple : operations logiques}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;    4: 	if ( arg >= 7 && arg <= 12){
+00E61260  cmp         dword ptr [ebp+8],7  ; condition 1
+00E61264  jl          00E61275             ; saute au else si arg < 7
+00E61266  cmp         dword ptr [ebp+8],0Ch  ; condition 2 
+00E6126A  jg          00E61275               ; saute au else si arg > 12
+;     5: 		local = 9001;
+00E6126C  mov         dword ptr [ebp-4],2329h  
+00E61273  jmp         00E6128E  
+;     6: 	}
+;     7: 	else if (arg || ! arg || arg == 69 ) {
+00E61275  cmp         dword ptr [ebp+8],0 condition 1 
+00E61279  jne         00E61287            ; surprise ! pas d'inversion
+00E6127B  cmp         dword ptr [ebp+8],0  
+00E6127F  je          00E61287            ; toujours pas d'inversion
+00E61281  cmp         dword ptr [ebp+8],45h  
+00E61285  jne         00E6128E            ; cette fois si.
+;     8: 		local = 6 * 9;
+00E61287  mov         dword ptr [ebp-4],36h  
+;     9: 	}
+;    10: 	return 0;
+00E6128E  xor         eax,eax  
+;    11: }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+\frametitle{Résumons}
+\begin{itemize}
+\item Chaque condition est transformée en \texttt{cmp} et \texttt{jXX}
+\item Les conditions des sauts conditionnels sont \textbf{inversées} par rapport au \texttt{if}.
+\item L'évaluation "paresseuse" des conditions se fait naturellement : chaque "atome" génere un couple comparaison + saut.
+\item Testez avec un operateur ternaire (\texttt{ a?b:c;}) ou un \lstinline+switch+.
+\end{itemize}
+\end{frame}
+
+
 
 \section{Les boucles}
 \begin{frame}
