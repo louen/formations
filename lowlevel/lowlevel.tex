@@ -103,7 +103,9 @@ captionpos=b                                    % the caption is at the bottom
 \section*{Introduction}
 \begin{frame}
     \frametitle{Abandonnez tout espoir}
-% image du desassembleur
+    \begin{center}
+\includegraphics[scale=0.5]{disass.png}
+\end{center}
 \end{frame}
 
 \begin{frame}
@@ -159,14 +161,14 @@ z = x + y;
     \end{lstlisting}
 \pause
     \begin{lstlisting}[language={[x86masm]Assembler}]
-     ;3:         int x = 1;
+     ;1:         int x = 1;
 00CB139E  mov         dword ptr [ebp-8],1  
-     ;4:         int y = 2;
+     ;2:         int y = 2;
 00CB13A5  mov         dword ptr [ebp-14h],2  
-     ;5:         int z = 0;
+     ;3:         int z = 0;
 00CB13AC  mov         dword ptr [ebp-20h],0  
-     ;6: 
-     ;7:         z = x + y;
+     ;4: 
+     ;5:         z = x + y;
 00CB13B3  mov         eax,dword ptr [ebp-8]  
 00CB13B6  add         eax,dword ptr [ebp-14h]  
 00CB13B9  mov         dword ptr [ebp-20h],eax  
@@ -187,9 +189,9 @@ z = x + y;
 \begin{frame} [fragile]
 \frametitle{Qu'est-ce que ca veut dire ?}
     \begin{lstlisting}[language={[x86masm]Assembler}]
- ; la memoire a l'adresse ebp-8 (adresse de x) prend la valeur 1
+ ; la memoire a l'adresse ebp-8 (&x) prend la valeur 1
 mov         dword ptr [ebp-8],1
- ; la memoire a ebp-14h (hexa) prend la valeur 2 (c'est y).
+ ; la memoire a ebp-14h (hex) prend la valeur 2.
 mov         dword ptr [ebp-14h],2
  ; idem pour z. 
 mov         dword ptr [ebp-20h],0
@@ -253,7 +255,7 @@ mov         dword ptr [ebp-20h],eax
 \frametitle{Types intrinseques}
 
 \begin{itemize}
-\item Les types effectivement manipulés par le CPU : \textbf{intrinseques}
+\item Les types réellement manipulés par le CPU : \textbf{intrinseques}
 \item Sous x86 : \lstinline[language={[x86masm]Assembler}]+dword+ (32 bits) (\lstinline+word+ étant 16 bits)
 \item Un type de 64 bits (\lstinline+long long+) sera représenté par deux \lstinline[language={[x86masm]Assembler}]+dword+s.
 \end{itemize}
@@ -593,6 +595,7 @@ push        ebx  ; sauve les registres
 push        esi  
 push        edi  
 \end{lstlisting}
+\includegraphics[scale=0.5]{stack_01.png}
 \end{frame}
 
 % image avant -> après 
@@ -607,19 +610,20 @@ Il fait l'inverse du préambule :
 013112A6  pop         ebp ; l'ancien bp est juste la !
 013112A7  ret
 \end{lstlisting}
+\includegraphics[scale=0.5]{stack_1.png}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Et notre code ?}
 \begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
-;     7:         int result = 0;
+;     7: int result = 0;
 mov         dword ptr [ebp-4],0  ; result est a ebp-4 dans notre SF 
-;     8:         result = ajouterUn(result);
+;     8: result = ajouterUn(result);
 mov         eax,dword ptr [ebp-4] ; copie le parametre  (via eax)
-push        eax  ; pour le mettre 	sur la pile 
-call        00C81041  ; saute a l'adresse de la fonction
-add         esp,4  ; pareil que pop(mais ignore la valeur)
-mov         dword ptr [ebp-4],eax  ; le resultat (eax) va dans result
+push        eax                   ; pour le mettre sur la pile 
+call        00C81041              ; saute a l'adresse de la fonction
+add         esp,4                 ; pareil que pop(ignore la valeur)
+mov         dword ptr [ebp-4],eax ; le resultat (eax) va dans result
 ;     9:         return 0;
 xor         eax,eax  
 \end{lstlisting}
@@ -655,6 +659,12 @@ pop         ebp
 ret  
 \end{lstlisting}
 
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Notre fonction}
+
+\includegraphics[scale=0.45]{stack.png}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -763,19 +773,19 @@ return 0;
 ;     2: 	if ( arg == 0 ){
 00F51260  cmp         dword ptr [ebp+8],0  
 00F51264  jne         0F5126Fh ; jump if not equal 
-;     3: 		local = 12;
+;     3: 	  local = 12;
 00F51266  mov         dword ptr [ebp-4],0Ch  
 00F5126D  jmp         0F51285h; on sort du bloc if 
 ;     4: 	}
 ;     5: 	else if (arg != 42) {
 00F5126F  cmp         dword ptr [ebp+8],2Ah  
 00F51273  je          0F5127Eh  ; jump if equal
-;     6: 		local = 6 * 9;
+;     6: 	  local = 6 * 9;
 00F51275  mov         dword ptr [ebp-4],36h  
 00F5127C  jmp         0F51285h   ; on sort du bloc if
 ;     7: 	}
 ;     8: 	else {
-;     9: 		local = 666;
+;     9: 	  local = 666;
 00F5127E  mov         dword ptr [ebp-4],29Ah ; 
 ;    10: 	}
 ;    11: 	return 0;
@@ -808,7 +818,7 @@ int f (int arg) {
 00E61264  jl          00E61275             ; saute au else si arg < 7
 00E61266  cmp         dword ptr [ebp+8],0Ch  ; condition 2 
 00E6126A  jg          00E61275               ; saute au else si arg > 12
-;     5: 		local = 9001;
+;     5: 	  local = 9001;
 00E6126C  mov         dword ptr [ebp-4],2329h  
 00E61273  jmp         00E6128E  
 ;     6: 	}
@@ -819,7 +829,7 @@ int f (int arg) {
 00E6127F  je          00E61287            ; toujours pas d'inversion
 00E61281  cmp         dword ptr [ebp+8],45h  
 00E61285  jne         00E6128E            ; cette fois si.
-;     8: 		local = 6 * 9;
+;     8: 	  local = 6 * 9;
 00E61287  mov         dword ptr [ebp-4],36h  
 ;     9: 	}
 ;    10: 	return 0;
@@ -840,23 +850,212 @@ int f (int arg) {
 
 
 
-\section{Les boucles}
-\begin{frame}
-\frametitle{Once upon a while}
-Les boucles c'est trop bien
+\section{La boucle est bouclée}
+\begin{frame}[fragile]
+\frametitle{Petite histoire des boucles}
+Protozoaire supérieur : \lstinline+if+ - \lstinline+goto+
+\begin{lstlisting}
+int main() {
+  int tab [5] ={ 8, 4, 22, 904, 30 };
+  int somme = 0;  int compteur = 0;
+
+DebutBoucle:
+  if (compteur < 5 ){
+    somme += tab[compteur];
+    ++compteur;
+    goto DebutBoucle;
+  }
+  return 0;
+}
+\end{lstlisting}
 \end{frame}
 
-% la pile
+\begin{frame}[fragile]
+\frametitle{Étudions ce fossile}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;     5: DebutBoucle:
+;     6: 	if (compteur < 5 ) {
+013F1284  cmp         dword ptr [ebp-20h],5 ; on reconnait un if
+013F1288  jge         13F12A2h              ; cmp + jump !
+;     7: 		somme += tab[compteur];
+013F128A  mov         eax,dword ptr [ebp-20h]       ; compteur dans eax
+013F128D  mov         ecx,dword ptr [ebp-1Ch]       ; somme dans ecx
+013F1290  add         ecx,dword ptr [ebp+eax*4-18h] ; WTF ?? 
+013F1294  mov         dword ptr [ebp-1Ch],ecx       ; resultat dans somme
+;     8: 		++compteur;
+013F1297  mov         eax,dword ptr [ebp-20h]  
+013F129A  add         eax,1  
+013F129D  mov         dword ptr [ebp-20h],eax  
+;     9: 		goto DebutBoucle;
+013F12A0  jmp         13F1284h  
+;    10: 	}
+;    11: 	return 0;
+013F12A2  xor         eax,eax  
+\end{lstlisting}
+\end{frame}
 
-% les conditions
-% les boucles
-% modele objets (vtable, héritage, etc.)
+\begin{frame}[fragile]
+\frametitle{Tombés sur un os}
+\begin{itemize}
+\item  \lstinline[language={[x86masm]Assembler}]@add ecx,dword ptr [ebp+eax*4-18h]@
+\item On veut accéder a l'élément du tableau désigné par \texttt{compteur} (dans \texttt{eax}).
+\item Réarangeons la formule : \texttt{(epb - 18h) + (eax * 4)}
+\item \lstinline@ &tab[0] + (compteur * sizeof(int))@
+\end{itemize}
+\end{frame}
 
-% assembleur optimisé - inlining
-%
+\begin{frame}[fragile]
+\frametitle{Petite histoire des boucles}
+Bas Moyen-Age : \lstinline+while+
+\begin{lstlisting}
+int main() {
+  int tab [5] ={ 8, 4, 22, 904, 30 };
+  int somme = 0;  int compteur = 0;
+  
+  while (compteur < 5 ){
+    somme += tab[compteur];
+    ++compteur;
+  }
+  return 0;
+}
+\end{lstlisting}
+\end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Faith in humanity restored}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;     5:  while (compteur < 5 ){
+01161284  cmp         dword ptr [ebp-20h],5  
+01161288  jge         11612A2h  
+;     6: 		somme += tab[compteur];
+0116128A  mov         eax,dword ptr [ebp-20h]  
+0116128D  mov         ecx,dword ptr [ebp-1Ch]  
+01161290  add         ecx,dword ptr [ebp+eax*4-18h]  
+01161294  mov         dword ptr [ebp-1Ch],ecx  
+;     7: 		++compteur;
+01161297  mov         eax,dword ptr [ebp-20h]  
+0116129A  add         eax,1  
+0116129D  mov         dword ptr [ebp-20h],eax  
+;     8: 	}
+011612A0  jmp         1161284h  
+;     9: 	return 0;
+011612A2  xor         eax,eax  
+\end{lstlisting}
+Vous pouvez vérifier le \lstinline+do{...} while(...)+.
+\end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Petite histoire des boucles}
+Époque moderne : \lstinline+for+
+\begin{lstlisting}
+int main() {
+  int tab [5] ={ 8, 4, 22, 904, 30 };
+  int somme = 0;  
+  for (int compteur = 0; compteur < 5; ++compteur){
+    somme += tab[compteur];
+  }
+  return 0;
+}
+\end{lstlisting}
+\end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Hail to the king, baby!}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+;     5: 	for (int compteur = 0; compteur < 5; ++compteur){
+00AA127D  mov         dword ptr [ebp-20h],0    ; compteur = 0
+00AA1284  jmp         00AA128F  
+
+00AA1286  mov         eax,dword ptr [ebp-20h]  
+00AA1289  add         eax,1                    ; ++compteur
+00AA128C  mov         dword ptr [ebp-20h],eax  
+
+00AA128F  cmp         dword ptr [ebp-20h],5  ;on retrouve notre if 
+00AA1293  jge         00AA12A4               ;(test de sortie de boucle)
+
+;     6: 		somme += tab[compteur];
+00AA1295  mov         eax,dword ptr [ebp-20h]  
+00AA1298  mov         ecx,dword ptr [ebp-1Ch]  
+00AA129B  add         ecx,dword ptr [ebp+eax*4-18h]  
+00AA129F  mov         dword ptr [ebp-1Ch],ecx  
+;     7: 	}
+00AA12A2  jmp         00AA1286  
+;     8: 	return 0;
+00AA12A4  xor         eax,eax  
+;     9: }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Final : hardcore loop porn}
+Etes vous prets a affronter de l'assembleur optimisé ?
+\begin{lstlisting}
+#include <cstdlib>
+int main(int argc, char**argv) {
+  int tab [5] ={ 8, 4, 22, 904, 30 };
+  int somme = 0;	
+  int taille = atoi(argv[0]);
+  for (int compteur = 0; compteur<taille; ++compteur){
+    somme += tab[compteur];
+  }
+  return 0;
+}
+\end{lstlisting}
+\begin{itemize}
+\item \textbf{/O2} : Active les optimisations
+\item \textbf{/Ob0} : Désactive l'inlining
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Hardcore loop porn}
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle={\scriptsize\ttfamily}]
+00F21042  xor       ecx,ecx   ; ecx = 0 
+00F21044  cmp       eax,2     ; si eax est < 2
+00F21047  jl        0F2105Fh  ; sauter a la fin de la boucle 
+00F21049  lea       edx,[eax-1]  ; edx = eax -1
+00F2104C  lea       esp,[esp]  
+; -- debut  boucle
+00F21050  add       esi,dword ptr [ebp+ecx*4-14h]; esi += tab [i] 
+00F21054  add       edi,dword ptr [ebp+ecx*4-10h]; esi += tab [i + 1]
+00F21058  add       ecx,2;		  ecx = ecx + 2
+00F2105B  cmp       ecx,edx   ; si ecx est < eax -1 
+00F2105D  jl        0F21050h  ; boucler
+; -- fin boucle
+00F2105F  cmp       ecx,eax   ; si ecx est < eax 
+00F21061  jge       0F21067h  ; sauter l'instruction suivante (pair)
+00F21063  mov       ebx,dword ptr ebx,dword ptr [ebp+ecx*4-14h]   
+00F21067  lea       eax,[edi+esi]  ; eax = somme finale
+00F2106A  pop       edi  
+00F2106B  pop       esi  
+00F2106C  add       eax,ebx  ; eax += impair eventuel
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Final : hardcore loop porn}
+\begin{itemize}
+\item Au niveau de l'assembleur les boucles ne sont pas si différentes du  \lstinline+if+ - \lstinline+goto+.
+\item Mais elles automatisent les choses (et évitent de se tromper)
+\item Nous avons vu un exemple d'optimisation : le déroulage de boucle
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Fini !}
+
+\begin{itemize}
+\item Alex Darby, \textit{A Low Level Curriculum For C and C++} (\href{http://http://www.altdevblogaday.com/2011/11/09/a-low-level-curriculum-for-c-and-c/}{AltDevBlogADay})
+\item \textit{Intel IA 32 Architecture Software Developper Manual} (\href{http://download.intel.com/products/processor/manual/325462.pdf}{intel.com})
+\item MazeGen, \textit{coder32} ASM reference (\href{http://ref.x86asm.net}{refx86asm.net})
+\end{itemize}
+
+\begin{center}
+\begin{large}
+\lstinline[language={[x86masm]Assembler}]+ret+ 
+\end{large}
+\end{center}
+\end{frame}
 
 %  \begin{block}{A block}
 %   Text in a block
