@@ -206,11 +206,13 @@ mov         dword ptr [ebp-20h],eax
 
 \begin{frame}
 \frametitle{Pfiouu !}
+\begin{block}{}
 \begin{itemize}
 \item C'était pas si horrible !
 \item En assembleur il y a les \textbf{instructions} (\lstinline[language={[x86masm]Assembler}]+mov+, \lstinline[language={[x86masm]Assembler}]+add+, etc.) et leurs \textbf{opérandes}.
 \item Tout se passe avec les \textbf{registres} qui contiennent les résultats temporaires (\texttt{eax}, \texttt{ebx},...) ou servent a indexer la mémoire (\texttt{esp},\texttt{ebp}...).
 \end{itemize}
+\end{block}
 \end{frame}
 
 \section{Casse toi, pauvre type !}
@@ -451,6 +453,7 @@ int main() {
 
 \begin{frame}
 \frametitle{Ouf !}
+\begin{block}{}
 On a vu pas mal de parametres a prendre en compte pour les types et leur représentation
 \begin{itemize}
 \item Leur taille (par rapport au types intrinseques)
@@ -459,6 +462,7 @@ On a vu pas mal de parametres a prendre en compte pour les types et leur représ
 \item L'endianness
 \item L'alignement
 \end{itemize}
+\end{block}
 \end{frame}
 
 \section{Sexe a Pile}
@@ -504,7 +508,6 @@ La convention d'appel standard de VS/x86 s'appelle \texttt{stdcall}
 \item Qui sauve quels registres ? l'appelant (\texttt{eax}-\texttt{edx}) et l'appelé le reste
 \end{itemize}
 \end{frame}
-% TODO  : image d'un stack frame ?
 
 \begin{frame}[fragile]
 \frametitle{Désassemblons !}
@@ -610,7 +613,7 @@ Il fait l'inverse du préambule :
 013112A6  pop         ebp ; l'ancien bp est juste la !
 013112A7  ret
 \end{lstlisting}
-\includegraphics[scale=0.5]{stack_1.png}
+\includegraphics[scale=0.5]{stack_01.png}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -669,6 +672,7 @@ ret
 
 \begin{frame}[fragile]
 \frametitle{Résumé}
+\begin{block}{}
 La pile sert a :
 \begin{itemize}
 \item Stocker les variables locales
@@ -682,7 +686,7 @@ Le \textbf{stack frame}
 \item Compris entre \texttt{esp} et \texttt{ebp}
 \item Les arguments : dans le SF de la fonction appelante
 \end{itemize}
-
+\end{block}
 \end{frame}
 
 \section{Condition zéro}
@@ -761,7 +765,7 @@ else if (arg != 42) {
   local = 6 * 9;
 }
 else {
-	local = 666;
+  local = 666;
 }
 return 0;
 \end{lstlisting}
@@ -840,12 +844,15 @@ int f (int arg) {
 
 \begin{frame}
 \frametitle{Résumons}
+\begin{block}{}
 \begin{itemize}
 \item Chaque condition est transformée en \texttt{cmp} et \texttt{jXX}
 \item Les conditions des sauts conditionnels sont \textbf{inversées} par rapport au \texttt{if}.
 \item L'évaluation "paresseuse" des conditions se fait naturellement : chaque "atome" génere un couple comparaison + saut.
 \item Testez avec un operateur ternaire (\texttt{ a?b:c;}) ou un \lstinline+switch+.
 \end{itemize}
+\end{block}
+
 \end{frame}
 
 
@@ -1033,12 +1040,14 @@ int main(int argc, char**argv) {
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Final : hardcore loop porn}
+\frametitle{Looping}
+\begin{block}{}
 \begin{itemize}
 \item Au niveau de l'assembleur les boucles ne sont pas si différentes du  \lstinline+if+ - \lstinline+goto+.
 \item Mais elles automatisent les choses (et évitent de se tromper)
 \item Nous avons vu un exemple d'optimisation : le déroulage de boucle
 \end{itemize}
+\end{block}
 \end{frame}
 
 \begin{frame}[fragile]
