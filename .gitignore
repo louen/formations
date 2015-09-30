@@ -1,0 +1,9 @@
+# ignore latex outputs
+*.pdf
+*.dvi
+*.toc
+*.snm
+*.log
+*.out
+*.nav
+*.aux
