@@ -7,3 +7,11 @@
 *.out
 *.nav
 *.aux
+
+# common garbage files
+*.backup
+*.autosave
+*.swp
+*.old
+*~
+*.orig
