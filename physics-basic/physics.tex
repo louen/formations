@@ -102,30 +102,43 @@ captionpos=b                                    % the caption is at the bottom
 \end{center}
 \end{frame}
 
-\section{Modeling Constraints}
-
+\section{Constraints}
 \begin{frame}
  \frametitle{What are constraints ?}
-  Joints, contacts, collision.
+ \includegraphics[width=\textwidth]{watch.png}\\
+  Joints, contacts, mechanical links...
 \end{frame}
 
 \begin{frame}
 \frametitle {Real-life examples}
+\begin{center}
+\includegraphics[width = 0.2\textwidth]{humanjoint.png}
+\includegraphics[width = 0.2\textwidth]{door.png}
+\includegraphics[width = 0.2\textwidth]{elevator.png}
    \begin{exampleblock}{Examples}
-     \begin{itemize}
-       \item Ball-socket, Hinge, Slider...
-       \item Human joint, Revolving door, elevator ...
-     \end{itemize}
+    \begin{center}
+     \begin{tabular}{c c c}
+       Human joint & Revolving door & Elevator \\
+       Ball-socket & Hinge & Slider
+     \end{tabular}
+     \end{center}
    \end{exampleblock}
-
-  \pause
-
+   \includegraphics[width = 0.2\textwidth]{ballsock.png}
+   \includegraphics[width = 0.2\textwidth]{hinge.png}
+   \includegraphics[width = 0.2\textwidth]{slider.png}
+\end{center}
+\end{frame}
+\subsection{Modeling constraints}
+\begin{frame}
+ \frametitle{What are constraints ?}
+ \begin{block}{Constraints}
   \begin{itemize}
-    \item A constraint limits \textbf{degrees of freedom} of rigid bodies.
+    \item A constraint limits \textbf{degrees of freedom} of rigid bodies. \pause
     % NOTE : 2 RBs have 2 * 6 = 12 DOF.
-    \item Constraints must be \textbf{solved} by the physics engine to be satisfied.
     \item Engine computes \textbf{constraint forces} to apply to the bodies.
+    \item Constraints must be \textbf{solved} by the physics engine to be satisfied.
   \end{itemize}
+  \end{block}
 \end{frame}
 
 
@@ -133,7 +146,8 @@ captionpos=b                                    % the caption is at the bottom
  \frametitle{Here comes the physics}
  \begin{itemize}
   \item A constraint can be written as an equation $C(\mathbf{q}) = 0$
-  \item Example : Ball-socket $\mathbf{c_1} + \mathbf{r_1} - (\mathbf{r_2} + \mathbf{p_2}) = 0$
+  \item Example : Ball-socket $\mathbf{c_1} + \mathbf{r_1} - (\mathbf{c_2} + \mathbf{r_2}) = 0$\\
+  \begin{center}\includegraphics[width = 0.4\textwidth]{jacobian1.png}\end{center}
   \pause
   \item We can derive and get a velocity equation $\dot{C} = 0$.
   \item $\mathbf{v_1} + (\mathbf{\omega_1} \times \mathbf{r_1}) - ( \mathbf{v_2} + (\mathbf{\omega_2} \times \mathbf{r_2})) = 0$
@@ -144,12 +158,64 @@ captionpos=b                                    % the caption is at the bottom
  \frametitle{Jacobians}
  \begin{block}{Jacobian : definition}
  \begin{itemize}
-  \item Velocities constraints can be written as a matrix equation
+  \item Velocities constraints can be written as a scalar product
   \item $J\mathbf{v} = 0$
   \pause
   \item Virtual work theorem : $\mathbf{F_c} = J^T \mathbf{\lambda}$
   \end{itemize}
   \end{block}
 \end{frame}
+
+\begin{frame}
+ \frametitle{Jacobians : the dirty details}
+  \begin{center}\includegraphics[width = 0.2\textwidth]{pendulum.png}\end{center}
+  \begin{itemize}
+    \item $C(x,y) = x^2 + y^2 - L^2 = 0$
+    \pause
+    \item $\frac{\mathrm{d}C}{\mathrm{d}t} = \frac{ 1 }{\sqrt{x^2+y^2}} \begin{pmatrix} x & y\end{pmatrix} \begin{pmatrix} v_x \\ v_y\end{pmatrix}$
+    \pause
+    \item VWT : $\mathbf{F_c} = \lambda \begin{pmatrix}x\\y\end{pmatrix}$ 
+  \end{itemize}
+  How do we compute $\lambda$ ?
+\end{frame}
+
+\subsection{Physics solver}
+
+\begin{frame}
+ \frametitle{What is the solver doing ?}
+ \begin{block}{Solver Algorithm}
+ \begin{enumerate}
+  \item Apply external impulses (e.g. gravity) $\bar{\mathbf{v}} = \mathbf{v} + M^{-1} \mathbf{P_{ext}}$
+  \item Apply constraint impulses by solving for all $\lambda$
+  \item Update positions from velocity.
+ \end{enumerate}
+ \end{block}
+ Reminder :
+ \begin{description}
+    \item[Impulse] $\mathbf{P} = \mathbf{F} \delta t$
+    \item[Newton] $\delta \mathbf{v} = M^{-1} \mathbf{P}$
+ \end{description}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Finding $\lambda$}
+  \begin{description}
+   \item[Newton] $\mathbf{v'} = \bar{\mathbf{v}} + M^{-1} \mathbf{P_{c}}$
+   \item[VWT] $\mathbf{F_c} = J^T \lambda$
+   \item[Constraint] $J\mathbf{v'} = 0$
+  \end{description}  
+\end{frame}
+
+
+
+\begin{frame}
+ \frametitle{Bibliography} 
+  \begin{thebibliography}{9}
+  \bibitem{Catto07} Erin \textsc{Catto} (Blizzard), \emph{Modeling and solving constraints}, Proceedings of GDC 2007. \href{http://box2d.org/downloads/}{Box2D website}
+  \bibitem{Ericson04} Christer \textsc{Ericson} (Sony), \emph{Real-time collision detection}. CRC Press, 2004.
+  \bibitem{Shabana09} Ahmed A. \textsc{Shabana} (U.Illinois), \emph{Computational dynamics}. John Wiley \& Sons, 2009
+  \end{thebibliography}
+\end{frame}
+
 
 \end{document}
