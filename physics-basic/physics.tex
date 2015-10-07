@@ -41,6 +41,8 @@
 % Useful packages ----------------
 \usepackage{listings}                           % for source code inclusion
 \usepackage{hyperref}
+\hypersetup{linkcolor=cyan}
+
 % Mathematical symbols------------
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -115,17 +117,19 @@ captionpos=b                                    % the caption is at the bottom
 \includegraphics[width = 0.2\textwidth]{humanjoint.png}
 \includegraphics[width = 0.2\textwidth]{door.png}
 \includegraphics[width = 0.2\textwidth]{elevator.png}
+\includegraphics[width = 0.2\textwidth]{carcrash.png}
    \begin{exampleblock}{Examples}
     \begin{center}
-     \begin{tabular}{c c c}
-       Human joint & Revolving door & Elevator \\
-       Ball-socket & Hinge & Slider
+     \begin{tabular}{c c c c}
+       Human joint & Revolving door & Elevator & Collision \\
+       Ball-socket & Hinge & Slider & Non-penetration
      \end{tabular}
      \end{center}
    \end{exampleblock}
    \includegraphics[width = 0.2\textwidth]{ballsock.png}
    \includegraphics[width = 0.2\textwidth]{hinge.png}
    \includegraphics[width = 0.2\textwidth]{slider.png}
+   \includegraphics[width = 0.2\textwidth]{collision.png}
 \end{center}
 \end{frame}
 \subsection{Modeling constraints}
@@ -201,17 +205,59 @@ captionpos=b                                    % the caption is at the bottom
  \frametitle{Finding $\lambda$}
   \begin{description}
    \item[Newton] $\mathbf{v'} = \bar{\mathbf{v}} + M^{-1} \mathbf{P_{c}}$
-   \item[VWT] $\mathbf{F_c} = J^T \lambda$
+   \item[VWT] $\mathbf{P_c} = J^T \lambda$
    \item[Constraint] $J\mathbf{v'} = 0$
   \end{description}  
+  \pause
+  \begin{block}{Solution}
+   \[ \lambda = -m_c (J \bar{\mathbf{v}})\]
+   \[ m_c = \frac{1}{J M^{-1}J^T} \]
+   $m_c$ is the virtual mass seen from the constraint
+  \end{block}
 \end{frame}
 
+\begin{frame}[fragile]
+ \frametitle{Solving all bodies}
+  \begin{itemize}
+   \item All the $\lambda_{i,j}$ equations = one big very sparse linear system.
+   \pause
+   \item We could solve it globally (slow)
+   \pause
+   \item Instead iterative methods are used.
+  \end{itemize}
+  \begin{lstlisting}
+while (abs(vNext - vCurrent) > epsilon) {
+ for (auto c : constraint) {
+   solve(c, lambda);
+  }
+}
+  \end{lstlisting}
+\end{frame}
+
+
+\begin{frame}
+ \frametitle{Extensions}
+ \begin{minipage}{0.78\linewidth}
+  \begin{itemize}
+   \item \textbf{Inequality constraint} ($C(\mathbf{q}) \geq 0$) for contacts.
+   \item \textbf{Bias} in constraint ($J\mathbf{v} + b = 0$)
+   \pause
+   \item \textbf{Baumgarte stabilization} to avoid position drift.
+  \end{itemize}
+ \end{minipage}
+% \vspace{}
+ \begin{minipage}{0.2\linewidth}
+   \includegraphics[width=0.9\textwidth]{blowup.png}
+ \end{minipage}
+
+\end{frame}
 
 
 \begin{frame}
  \frametitle{Bibliography} 
   \begin{thebibliography}{9}
-  \bibitem{Catto07} Erin \textsc{Catto} (Blizzard), \emph{Modeling and solving constraints}, Proceedings of GDC 2007. \href{http://box2d.org/downloads/}{Box2D website}
+  \bibitem{Catto07} Erin \textsc{Catto} (Blizzard), \emph{Modeling and solving constraints}, Proceedings of GDC 2007.\href{http://box2d.org/files/GDC2007/GDC2007_Catto_Erin_Physics1.ppt}{[PPT]} 
+  \bibitem{Catto07} Erin \textsc{Catto} (Blizzard), \emph{Computing Distance using GJK}, Proceedings of GDC 2010. \href{http://box2d.org/files/GDC2010/GDC2010_Catto_Erin_GJK.pdf}{[PDF]}
   \bibitem{Ericson04} Christer \textsc{Ericson} (Sony), \emph{Real-time collision detection}. CRC Press, 2004.
   \bibitem{Shabana09} Ahmed A. \textsc{Shabana} (U.Illinois), \emph{Computational dynamics}. John Wiley \& Sons, 2009
   \end{thebibliography}
