@@ -87,8 +87,8 @@ captionpos=b                                    % the caption is at the bottom
 % }
 
 % ============================== FRONT MATTER =================================
-\title{}
-\subtitle{}
+\title{Getting physical}
+\subtitle{Introduction to physics engines}
 \author{Charly \textsc{Mourglia} \& Valentin \textsc{Roussellet}}
 \institute[IRIT]{IRIT}
 \date{\today}
@@ -102,6 +102,193 @@ captionpos=b                                    % the caption is at the bottom
 \begin{center}
 \href{mailto:valentin.roussellet@irit.fr}{valentin.roussellet@irit.fr}
 \end{center}
+\end{frame}
+
+
+\begin{frame}
+ \frametitle{Introduction}
+ \includegraphics[width=1.04\textwidth]{bullet.jpg}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Outline}
+ \tableofcontents
+ \begin{alertblock}{Warning}
+  This presentation contains maths. Be afraid. Be very afraid.
+ \end{alertblock}
+
+\end{frame}
+
+
+
+\section{Moving objects}
+\subsection{Dynamics 101}
+\begin{frame}
+  \frametitle{Position, velocity, acceleration}
+  \begin{itemize}
+  \item Position $\mathbf{x}(t)$ of an object at time $t$
+    $$
+    \mathbf{x}(t) = \mathbf{x}_0 + \int_0^t \mathbf{v}(t)dt
+    $$
+    
+    \pause
+  \item Velocity $\mathbf{v}(t)$ of an object at time $t$
+    $$
+    \mathbf{v}(t) = \dot{\mathbf{x}}(t) = \frac{d}{dt}\mathbf{x}(t) = \mathbf{v}_0 + \int_0^t \mathbf{a}(t)dt
+    $$
+
+    \pause
+  \item Acceleration $\mathbf{a}(t)$ of an object at time $t$
+    $$
+    \mathbf{a}(t) = \dot{\mathbf{v}}(t) = \ddot{\mathbf{x}}(t) = \frac{d^2}{dt^2}\mathbf{x}(t)
+    $$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Forces}
+  Objects change their movement when force is applied to them.
+  \begin{exampleblock}{Examples of forces}
+  \begin{itemize}
+  \item Friction
+  \item Gravity
+  \item Elastic collisions
+  \end{itemize}
+  \end{exampleblock}
+\end{frame}
+  
+\begin{frame}
+ \frametitle{Newton's second law}
+  Relation between \textbf{forces} and \textbf{acceleration}~:
+
+    \begin{block}{Newton's Second Law of Motion}
+      ``The sum of the external forces acting on an object
+      is equal to the mass of that object multiplied by
+      the acceleration vector of the object''
+
+      $$
+      \mathbf{F_{ext}}(t) = \sum_{i=1}^N \mathbf{F}_i(t) \hspace{25pt} 
+      \mathbf{F_{ext}}(t) = m \mathbf{a}(t)
+      $$
+      \pause
+      $$
+      \mathbf{a}(t) = \frac{1}{m} \mathbf{{F}_{ext}}(t)
+      $$
+    \end{block}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Newton's second law}
+  Relation between \textbf{forces} and \textbf{acceleration}~:
+  \begin{center}\includegraphics{puma.png}\end{center}
+\end{frame}
+
+\subsection{Numerical integration}
+\begin{frame}
+  \frametitle{Numerical integration}
+
+  \begin{itemize}
+  \item Finding the position of an object at a given time $t$ requires solving
+    the following second-order differential equation
+    
+    $$
+    \mathbf{F}_{ext}(t) = m\ddot{\mathbf{x}}(t)
+    $$
+    \pause
+  \item Discretize the time and solve for the discretization steps $\delta t$
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Forward (explicit) Euler Method}
+
+  \begin{itemize}
+  \item Given timestep $\delta t$ we have
+
+    $$
+    \begin{cases}
+      \mathbf{x}_{i+1} &= \mathbf{x}_i + \delta t \mathbf{v}_i\\
+      \mathbf{v}_{i+1} &= \mathbf{v}_i + \delta t \mathbf{a}_i
+    \end{cases}
+    $$
+    \pause
+  \item Very fast to compute
+    \pause
+  \item Very inaccurate, can be unstable
+  \item Not used in real-time physics engines due to the inaccuracies / instabilities
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Forward Euler Problems}
+
+  \begin{itemize}
+  \item Error~: approximately proportionnal to $\delta t$
+    \pause
+  \item Instability:~\\
+    \begin{figure}[p]
+      \centering
+      \includegraphics[width=0.5\linewidth]{instability.png}
+      \caption{Solutions for the DE $y' = -2.3y$ with $h=1$ (blue squares) and $h=0.7$ (red dots).
+        The exact solution is $y(t) = e^{-2.3t}$}
+    \end{figure}
+  \end{itemize} 
+\end{frame}
+
+\begin{frame}
+  \frametitle{Backward (implicit) Euler Method}
+
+  \begin{itemize}
+  \item Given timestep $\delta t$ we have
+
+    $$
+    \begin{cases}
+      \mathbf{v}_{i+1} &= \mathbf{v}_i + \delta t \mathbf{a}_{i+1}\\
+      \mathbf{x}_{i+1} &= \mathbf{x}_i + \delta t \mathbf{v}_{i+1}
+    \end{cases}
+    $$
+
+  \item Stable solution with no limit on the timestep
+  \item Absorbs energy (the larger the timestep, the more energy absorbed)
+  \pause
+  \item Needs to \textbf{solve} the next value for $\mathbf{a}$ (\emph{e.g Newton-Raphson}), very expensive
+  \item Not used in real-time physics engines due to the cost. 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Semi-implicit Euler Method}
+
+  \begin{itemize}
+  \item Given timestep $\delta t$ we have
+
+    $$
+    \begin{cases}
+      \mathbf{v}_{i+1} &= \mathbf{v}_i + \delta t \mathbf{a}_i\\
+      \mathbf{x}_{i+1} &= \mathbf{x}_i + \delta t \mathbf{v}_{i+1}
+    \end{cases}
+    $$
+
+  \item As efficient as Explicit Euler
+  \item Stable for small enough step sizes
+  \item Conserves energy
+    
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other methods}
+  \begin{itemize}
+  \item Euler methods are first order integration methods
+  \item Semi-implicit Euler method is good enough for video games
+  \item There are more accurate methods~:
+    Verlet (second order), Runge-Kutta 4 (fourth order)
+  \item Too slow for games real-time requirements
+    
+  \end{itemize}
 \end{frame}
 
 \section{Constraints}
@@ -252,6 +439,103 @@ while (abs(vNext - vCurrent) > epsilon) {
 
 \end{frame}
 
+
+
+
+
+\section{Collision detection}
+\begin{frame}
+  \frametitle{Collision detection}
+  
+  \begin{block}{Why collision detection ?}
+    \begin{itemize}
+    \item Prevent character to fall through the floor
+    \item Do not allow kills from behind a wall
+    \item Check if a fired bullet touched a target
+    \item Open a door when a character is walking toward it
+    \item ...
+    \end{itemize}
+  \end{block}
+  
+\end{frame}
+\subsection{Broadphase optimzation}
+
+\begin{frame}[fragile]
+  \frametitle{The bruteforce method}
+
+  \begin{lstlisting}
+    for_each object o1
+      for_each object o2
+        for_each triangle t1 in o1
+          for_each triangle t2 in o2
+            checkCollision( t1, t2 )
+  \end{lstlisting}
+
+  \pause
+  \begin{itemize}
+  \item ``Ok'' for two cubes
+  \item Might be a bit slow when you have multiples characters averaging $150'000$ triangles each...
+    \pause
+  \item Eliminate what can not collide
+  \item Test potential collisions more accurately
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Broad phase - Bounding Volume Hierarchies (BVH)}
+  
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{bvh.png}
+  \end{figure}
+
+  \only<1> {
+    \begin{itemize}
+    \item Each object bounding volume is a leaf of a tree
+    \item Those BV are grouped into small sets and new volumes are computed
+    \item Same applies for the new volumes until the whole scene is enclosed within one volume
+    \end{itemize}
+  }
+
+  \only<2> {
+    \begin{itemize}
+    \item Discriminate geometries against another by running through the tree
+    \item Changing tree branch means no collision can occur
+    \item Two leafs can then collide if there bounding volumes overlap
+    \end{itemize}
+  }
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Broad phase - Sweep and Prune (SaP)}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{sap.png}
+  \end{figure}
+
+  \begin{itemize}
+  \item Project lower and upper bound of each object on $x$, $y$ and $z$ axis
+  \item If bounds of two objects do not overlap for any axis, objects can not collide
+  \item However if the overlap on all axes, objects can be tested
+  \end{itemize}
+
+\end{frame}
+
+\subsection{Convex vs. convex with GJK}
+\begin{frame}
+  \frametitle{GJK distance algorithm}
+  \begin{itemize}
+  \item Trivia~: GJK stands for \emph{Gilbert-Johnson-Keerthi}
+
+  \item Objective~: Find if two objects collide
+
+  \end{itemize}
+\end{frame}
+
+\section*{Bibliography}
 
 \begin{frame}
  \frametitle{Bibliography} 
