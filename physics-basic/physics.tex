@@ -42,6 +42,7 @@
 \usepackage{listings}                           % for source code inclusion
 \usepackage{hyperref}
 \hypersetup{linkcolor=cyan}
+\usepackage{movie15}
 
 % Mathematical symbols------------
 \usepackage{amsmath}
@@ -526,13 +527,141 @@ while (abs(vNext - vCurrent) > epsilon) {
 
 \subsection{Convex vs. convex with GJK}
 \begin{frame}
-  \frametitle{GJK distance algorithm}
+  \frametitle{Collision between convex}
+  \begin{figure}[p]
+    \centering
+    \includegraphics[width=0.8\linewidth]{convexcollision}
+    \caption{Collision between convex shapes}
+  \end{figure}
   \begin{itemize}
-  \item Trivia~: GJK stands for \emph{Gilbert-Johnson-Keerthi}
-
-  \item Objective~: Find if two objects collide
-
+  \item Good enough approximation for collision detection
+  \item Simple enough approximation for real-time requirements
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Minkowski difference}
+
+  \begin{figure}[p]
+    \centering
+    \includegraphics[width=0.7\linewidth]{minkowski}
+  \end{figure}
+  \vspace{-1em}
+  \visible<2-3> {
+  $$
+  Z = \left\{ y_j - x_i, x_i \in X, y_j \in Y \right\}
+  $$
+  }
+  \vspace{-2em}
+  \visible<3> {
+
+  \begin{figure}[p]
+    \centering
+    \includegraphics[width=0.7\linewidth]{minkowskidetail}
+  \end{figure}
+  }
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Point-convex distance}
+  \begin{minipage}{0.6\linewidth}
+    \begin{itemize}
+    \item Minkowski difference properties~: convex-convex distance to point-convex distance
+    \item Point-convex distance is solved by the GJK algorithm
+    \item Trivia~: GJK stands for \emph{Gilbert-Johnson-Keerthi}
+    \end{itemize}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.38\linewidth}
+    \begin{figure}[p]
+      \centering
+      \includegraphics[width=0.9\linewidth]{gjk}
+    \end{figure}
+  \end{minipage}
+\end{frame}
+
+\subsection{Continuous Collision Detection}
+\begin{frame}
+  \frametitle{Continuous collision detection}
+
+  \begin{figure}[p]
+    \centering
+    \only<1>{
+      \includegraphics[width=0.9\linewidth]{ccd1}
+    }
+    \only<2>{
+      \includegraphics[width=0.9\linewidth]{ccd2}
+    }
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Thicker wall ?}
+  \begin{figure}[p]
+    \centering
+    \includegraphics[width=0.7\linewidth]{ccd3}
+  \end{figure}
+  \begin{itemize}
+  \item Move physics engine issue to game design
+  \item Greater velocity will still lead to tunelling
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Speculative contact points}
+  
+  \begin{minipage}{0.4\linewidth}
+    \begin{figure}[p]
+      \centering
+      \includegraphics[width=0.9\linewidth]{ccd5}
+    \end{figure}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.55\linewidth}
+    \begin{itemize}
+    \item Standard contact constraint~: $v_\text{rel} \cdot n \geq 0$
+    \item Speculative contact constraint~: $v_\text{rel} \cdot n \geq -\frac{d}{\delta t}$
+    \end{itemize}
+  \end{minipage}
+
+  \pause
+  \begin{itemize}
+  \item Leads to false positives
+  \item More constraints
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Time of Impact}
+
+  \begin{figure}[p]
+    \centering
+    \includegraphics[width=0.5\linewidth]{ccd6}
+  \end{figure}
+
+  \begin{itemize}
+  \item Find the exact instant of the impact
+  \item Perform integration / collision detections substeps
+  \item More CPU time
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{CCD, without}
+  \begin{centering}
+    \includemovie[autoplay=false]{6cm}{4cm}{ccdoff.mp4}
+  \end{centering}
+\end{frame}
+
+\begin{frame}
+  \frametitle{CCD, with}
+  \begin{centering}
+    \includemovie[autoplay=false]{6cm}{4cm}{ccdon.mp4}
+  \end{centering}
 \end{frame}
 
 \section*{Bibliography}
